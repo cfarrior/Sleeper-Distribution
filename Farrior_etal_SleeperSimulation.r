@@ -1,5 +1,6 @@
-#Simulation model of "Dominance of the Suppressed", Farrior et al. In Review
-#Last updated 15 July 2015   cfarrior@gmail.com
+#Simulation model from the paper: 
+#Farrior, Bohlman, Hubbell and Pacala. "Dominance of the suppressed: Power law size strucutre in tropical forests"
+#Last updated 15 Nov 2015   cfarrior@gmail.com
 
 #To run, create a folder: "c:/usr/Farrior_etal_SleeperDist/"
 #enter the following in R without the #'s: 
@@ -69,8 +70,8 @@ main_cohorts = function(runV=c(filestem="default",PA=1000,deltaT=1,Fnot=0.05,dno
 		}
 		data = data[data[,2]>0,,drop=FALSE]
 		#Step 2: Growth
-		data[data[,3]==1,1] = data[data[,3]==1,1]+(G.c+rnorm(1,0,.3))*deltaT
-		data[data[,3]==2,1] = data[data[,3]==2,1]+(G.u+rnorm(1,0,.01))*deltaT
+		data[data[,3]==1,1] = data[data[,3]==1,1]+G.c*deltaT
+		data[data[,3]==2,1] = data[data[,3]==2,1]+G.u*deltaT
 		data = data[data[,1]>0,,drop=FALSE]
 
 		#Step 3: Reproduce
