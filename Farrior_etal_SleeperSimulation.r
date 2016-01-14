@@ -1,4 +1,4 @@
-#Simulation model of "Dominance of the Suppressed", Farrior et al. In Review
+#Simulation model of "Dominance of the Suppressed", Farrior et al. 2016
 #Last updated 15 July 2015   cfarrior@gmail.com
 
 #To run, create a folder: "c:/usr/Farrior_etal_SleeperDist/"
