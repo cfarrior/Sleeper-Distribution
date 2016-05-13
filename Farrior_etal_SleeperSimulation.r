@@ -12,10 +12,12 @@
 #*'s indicate empty bins and blue line is a smoothing of the data to incorporate those empty bins. 
 #To finish, the size distribution for all recorded snapshots of the simulation is plotted in the same way. 
 
+
+#crown area allometry parameters (Individual crown area (in m2) = phi * d(in mm) ^theta)
 phi = 0.03615016; theta = 1.2819275
 
 ######################################
-main_cohorts = function(runV=c(filestem="default",PA=1000,deltaT=1,Fnot=0.05,dnot=0.02,G.c=6.05,G.u=0.534,mu.c=0.0097,mu.u=0.025,mu=0.0097,cutT=400,landscape_m2=125000),tag=1,newplot=FALSE,plotting=TRUE){
+main_cohorts = function(runV=c(filestem="default",PA=1000,deltaT=1,Fnot=0.02,dnot=0.02,G.c=6.05,G.u=0.534,mu.c=0.0097,mu.u=0.025,mu=0.0097,cutT=400,landscape_m2=125000),tag=1,newplot=FALSE,plotting=TRUE){
 #runs the cohorts model
 #runV: contains all of the inputs for the simulation, including:
 	#filestem: the name to call the output files
@@ -35,9 +37,11 @@ main_cohorts = function(runV=c(filestem="default",PA=1000,deltaT=1,Fnot=0.05,dno
 #plotting: logical, whether to plot the size distribution during the simulation, when TRUE slows the run speed considerably
 ######################################
 	filestem = runV[names(runV)=="filestem"][[1]]
-
+	
+	#save a file log file with the parameters of the run
 	if(tag==1) write.table(cbind(date(),t(runV)),paste("main_cohorts_LOG.txt",sep=""),append=TRUE,sep="\t",col.names=filestem=="start",row.names=FALSE)
 	
+	#pull the parameters out of runV for use.
 	PA = as.numeric(runV[names(runV)=="PA"][[1]])
 	deltaT = as.numeric(runV[names(runV)=="deltaT"][[1]])
 	Fnot = as.numeric(runV[names(runV)=="Fnot"][[1]])
@@ -50,58 +54,70 @@ main_cohorts = function(runV=c(filestem="default",PA=1000,deltaT=1,Fnot=0.05,dno
 	cutT = as.numeric(runV[names(runV)=="cutT"][[1]])
 	landscape_m2 = as.numeric(runV[names(runV)=="landscape_m2"][[1]])
 	
+	#convert desired landscape size into the length of time to run the simulation (depends on the plot area and the frequency of taking snapshots).
 	maxT = landscape_m2/PA*cutT
 
-	maxF = PA/(phi*dnot^theta) #used to put a limit on seedlings if needed
+	#used to put a limit on seedlings if needed
+	maxF = PA/(phi*dnot^theta) 
 	
-	data = matrix(1,nrow=1,ncol=3) #columns: cohort diameter, #of individuals, crown class
+	data = matrix(1,nrow=1,ncol=3) #main matrix with columns: (1) cohort diameter, (2) #of individuals, (3) crown class
+	#initialize the matrix with initial cohort of individuals.
 	data[,1] = dnot; data[,2] = min(maxF,round(PA*Fnot*deltaT)); data[,3] = 1
 	
-	ndata = data #when the stand gets wiped out, it will come back to this initial setting
+	#save initial conditions for use when stand gets wiped out. 
+	ndata = data 
 	
 	if(newplot) {win.graph(width=4,height=4); par(mfrow=c(1,1),oma=c(1,1,1,1))}
 	
+	#main loop. Remeber data matrix has columns: (1) diameter (2) # of individual (3) crown class
+	#crown class = 1 for canopy; crown class = 2 for understory
 	for(t in seq(0,maxT,by=deltaT)){
 		#Step 1: Mortality
 		#Step 1a: Stand clearing disturbance
 		if(runif(1)<mu*deltaT) data = ndata  #If stand-level disturbance, set trees back to ndata
 		#Step 1b: background mortality
 		for(i in seq(1,dim(data)[1])){
+			#canopy individuals die yearly with probability mu.c
 			if(data[i,3]==1) data[i,2] = rbinom(1,data[i,2],1-mu.c*deltaT)
+			#understory individuals die at a yearly rate mu.u
 			if(data[i,3]==2) data[i,2] = rbinom(1,data[i,2],1-mu.u*deltaT)
 		}
 		data = data[data[,2]>0,,drop=FALSE]
 		#Step 2: Growth
-		data[data[,3]==1,1] = data[data[,3]==1,1]+(G.c+rnorm(1,0,.3))*deltaT
-		data[data[,3]==2,1] = data[data[,3]==2,1]+(G.u+rnorm(1,0,.01))*deltaT
+		#canopy individuals grow at a rate G.c
+		data[data[,3]==1,1] = data[data[,3]==1,1]+(G.c)*deltaT
+		#understory individuals grow at a rate G.u
+		data[data[,3]==2,1] = data[data[,3]==2,1]+(G.u)*deltaT
+		#shouldn't be necessary but needed if one goes to variable growth. 
 		data = data[data[,1]>0,,drop=FALSE]
 
 		#Step 3: Reproduce
+		#Note here, reproduction is not a function of this patch itself, but it easily could be with: babies = round(min(PA,sum(data[,1]^theta*phi*data[,2]))*Fnot*deltaT)
 		babies = round(PA*Fnot*deltaT) #dispersal from far away
 		if(babies>0){
 			babyMatrix = matrix(1,nrow=1,ncol=3)
 			CA = sum(phi*data[,1]^theta*data[,2])
 			babyMatrix[,1]=dnot; babyMatrix[,2]=babies
-			if(CA>PA) babyMatrix[,3]=2
+			if(CA>PA) babyMatrix[,3]=2  #this could be wrong, but will be corrected in CCassign below.
 			data = rbind(data,babyMatrix)
 		}
 			
 		#Step 4: Assign crown class
-		CA = sum(phi*data[,1]^theta*data[,2])
-		if(CA<=PA) data[,3]=1
-		if(CA>PA) data = CCassign(data,PA,deltaT)
+		CA = sum(phi*data[,1]^theta*data[,2]) #total crown area of individuals in the plot
+		if(CA<=PA) data[,3]=1  #if less than the ground area, no need for CCassign. Everyone is in the canopy. 
+		if(CA>PA) data = CCassign(data,PA,deltaT) #if greater than the ground area, go through CCassign
 		
 		#Step 5: Record and plot
-		if(floor(t/cutT)==t/cutT){
+		if(floor(t/cutT)==t/cutT){  #records data once every cutT timesteps.
 			if(dim(data)[1]>0) write.table(data,paste(filestem,tag,".txt",sep=""),sep="\t",col.names=t==cutT,row.names=FALSE,append=t!=cutT)
 		}
 		if(plotting) if(max(data[,1])>10) bdata = SizeDistPlot(data,sizem2=PA,xmax=5000,ymin=1e-4)
 	}
 	
+	#plot the size distribution of the whole landscape
 	tdata = read.table(paste(runV[[1]],tag,".txt",sep=""),sep="\t",header=TRUE)
 	tbdata = SizeDistPlot(as.matrix(tdata),sizem2=as.numeric(runV[names(runV)=="landscape_m2"][[1]]),main=paste(runV[[1]],tag))
 
-	
 }# end main_cohorts
 
 ######################################
@@ -111,13 +127,19 @@ CCassign = function(data,PA,deltaT){
 # assumes all individuals have the same crown area and height allometries
 # assumes that CAtot>PA 
 ######################################
+
+	#make a vector cacaV where the ith entry is the crown area of the i'th cohort plus all cohorts with individuals of greater diameter.
 	CAv = phi*data[,1]^theta
 	data = data[order(CAv,decreasing=TRUE),]
 	CAv = CAv[order(CAv,decreasing=TRUE)]
 	cohortCAv = CAv*data[,2]
 	cacaV = cumsum(cohortCAv)
+
+	#pull out individuals that are definitely in the canopy and understory
 	und = data[cacaV>PA,,drop=FALSE]
 	can = data[cacaV<PA,,drop=FALSE]
+	
+	#split the first cohort in the understory to fill the leftover open canopy space
 	canCA = max(0,sum(phi*can[,1]^theta*can[,2]))
 	tosplit = und[1,,drop=FALSE]
 	opencan = PA-canCA
@@ -126,8 +148,12 @@ CCassign = function(data,PA,deltaT){
 	tosplit[,2] = splitind_incan
 	can = rbind(can,tosplit)
 	can[,3]=1; und[,3]=2
+
+	#piece the data back together
 	data = rbind(can,und)
-	if(dim(can)[1]==0) data[1,3]=1 #always have a tree in the canopy, even if it's bigger than the plot area
+	#always have a tree in the canopy, even if it's bigger than the plot area 
+	if(dim(can)[1]==0) data[1,3]=1 
+	
 	data = data[data[,2]>0,,drop=FALSE]
 	return(data)
 }# end CCassign
