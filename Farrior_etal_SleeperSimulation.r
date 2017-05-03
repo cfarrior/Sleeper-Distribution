@@ -67,7 +67,7 @@ main_cohorts = function(runV=c(filestem="default",PA=1000,deltaT=1,Fnot=0.02,dno
 	#save initial conditions for use when stand gets wiped out. 
 	ndata = data 
 	
-	if(newplot) {win.graph(width=4,height=4); par(mfrow=c(1,1),oma=c(1,1,1,1))}
+	if(newplot) {X11(width=4,height=4); par(mfrow=c(1,1),oma=c(1,1,1,1))}
 	
 	#main loop. Remeber data matrix has columns: (1) diameter (2) # of individual (3) crown class
 	#crown class = 1 for canopy; crown class = 2 for understory
