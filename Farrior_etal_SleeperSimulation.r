@@ -1,17 +1,17 @@
-#Simulation model of "Dominance of the Suppressed", Farrior et al. 2016
-#Last updated 15 July 2015   cfarrior@gmail.com
+#Simulation model of "Dominance of the Suppressed", Farrior et al. 2016. Contact: cfarrior@gmail.com
 
 #To run, create a folder: "c:/usr/Farrior_etal_SleeperDist/"
-#enter the following in R without the #'s: 
+#enter the following in R (without the #'s): 
 #setwd("c:/usr/Farrior_etal_SleeperDist/")
 #source("Farrior_etal_SleeperSimulation.r")
 #runV = c(filestem="PaperParameters",PA=1000,deltaT=1,Fnot=0.02,dnot=.02,G.c=6.05,G.u=.534,mu.c=0.0194/2,mu.u=0.0347-0.0194/2,mu=0.0194/2,cutT=400,landscape_m2=125000,censuscutT = 5)
 #main_cohorts(runV=runV,tag=1,newplot=TRUE,plotting=TRUE)
-#When plotting = TRUE, the simulation runs much more slowly but you can watch the patch develop and crash. 
-#The best fit BCI power law (Fig. 1) is added for comparison. 
-#*'s indicate empty bins and blue line is a smoothing of the data to incorporate those empty bins. 
-#To finish, the size distribution for all recorded snapshots of the simulation is plotted in the same way. 
 
+#notes:
+#When plotting = TRUE, the simulation runs much more slowly but you can watch the patch develop and go through a stand clearing disturbances.  
+#During the simulation, you will seeing the size distribution of the single patch as it changes through time. The dots are the number of individuals in a small bin. Stars indicate that the bin is empty (zero impossible to plot on log/log scale). The blue line is a smoothing on those dots to show what the zeros do to the size distribution. 
+#The bestfit powerlaw (Fig. 1) is also plotted for reference. 
+#At the end of the simulation the size distribution at the landscape scale is plotted. This is assembled from taking snapshots of the single patch many years apart. 
 
 #crown area allometry parameters (Individual crown area (in m2) = phi * d(in mm) ^theta)
 phi = 0.03615016; theta = 1.2819275
@@ -23,12 +23,12 @@ main_cohorts = function(runV=c(filestem="default",PA=1000,deltaT=1,Fnot=0.02,dno
 	#filestem: the name to call the output files
 #PA: size in m2 of the plot
 #deltaT: timestep in years
-#Fnot: individuals produced per m2 of sun-lit crown area at dnot (reproduction to seedling)
-#dnot: the initial size of a seedling
+#Fnot: individuals produced per m2 of sun-lit crown area at dnot (reproduction to seedling); also used for recruitment rate ind/m2/year
+#dnot: the initial size of a seedling, mm
 #G.c: the diameter growth rate, in mm/year of individuals in sun
 #G.u: the diameter growth, in mm/year of individuals in the understory
 #mu.c: the mortality rate in years^-1 of individuals in the sun
-#mu.u: the mortality rate in years^-2 of individuals in the understory
+#mu.u: the mortality rate in years^-1 of individuals in the understory
 #mu: the stand clearing disturbance rate
 #cutT: the time between recording snapshots of the forest - these used to build a landscape of independent forests
 #landscape_m2: the desired size of the final assembled landscape (landscape_m2 = PA*[total run time]/cutT)
