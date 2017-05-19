@@ -1,8 +1,8 @@
 #Simulation model of "Dominance of the Suppressed", Farrior et al. 2016. Contact: cfarrior@gmail.com
 
-#To run, create a folder: "c:/usr/Farrior_etal_SleeperDist/"
+#To run, create a folder: "c:/usr/Farrior_etal_SleeperDist/Sleeper-Distribution/"
 #enter the following in R (without the #'s): 
-#setwd("c:/usr/Farrior_etal_SleeperDist/")
+#setwd("c:/usr/Farrior_etal_SleeperDist/Sleeper-Distribution/")
 #source("Farrior_etal_SleeperSimulation.r")
 runVdefault = c(filestem="PaperParameters",PA=1000,deltaT=1,Fnot=0.02,dnot=.02,G.c=6.05,G.u=.534,mu.c=0.0194/2,mu.u=0.0347-0.0194/2,mu=0.0194/2,cutT=400,landscape_m2=125000,censuscutT = 5)
 #main_cohorts(runV=runVdefault,tag=1,newplot=TRUE,plotting=TRUE)
