@@ -4,8 +4,8 @@
 #enter the following in R (without the #'s): 
 #setwd("c:/usr/Farrior_etal_SleeperDist/")
 #source("Farrior_etal_SleeperSimulation.r")
-#runV = c(filestem="PaperParameters",PA=1000,deltaT=1,Fnot=0.02,dnot=.02,G.c=6.05,G.u=.534,mu.c=0.0194/2,mu.u=0.0347-0.0194/2,mu=0.0194/2,cutT=400,landscape_m2=125000,censuscutT = 5)
-#main_cohorts(runV=runV,tag=1,newplot=TRUE,plotting=TRUE)
+runVdefault = c(filestem="PaperParameters",PA=1000,deltaT=1,Fnot=0.02,dnot=.02,G.c=6.05,G.u=.534,mu.c=0.0194/2,mu.u=0.0347-0.0194/2,mu=0.0194/2,cutT=400,landscape_m2=125000,censuscutT = 5)
+#main_cohorts(runV=runVdefault,tag=1,newplot=TRUE,plotting=TRUE)
 
 #notes:
 #When plotting = TRUE, the simulation runs much more slowly but you can watch the patch develop and go through a stand clearing disturbances.  
@@ -17,7 +17,27 @@
 phi = 0.03615016; theta = 1.2819275
 
 ######################################
-main_cohorts = function(runV=c(filestem="default",PA=1000,deltaT=1,Fnot=0.02,dnot=0.02,G.c=6.05,G.u=0.534,mu.c=0.0097,mu.u=0.025,mu=0.0097,cutT=400,landscape_m2=125000),tag=1,newplot=FALSE,plotting=TRUE){
+PlotFile = function(filestem="test",tag=1){
+#funtion to plot the size distribution for the filestem,tag file. 
+#reads the parameter values used from the log file and uses that information for plotting the data in the output file 
+######################################
+
+	filelog = read.table("main_cohorts_LOG.txt",sep="\t",header=FALSE)
+	filelog = as.data.frame(filelog)
+	names(filelog) = c("date",names(runV))
+	
+	filedata = filelog[filelog$filestem==filestem,,drop=FALSE]
+	filedata = filedata[dim(filedata)[1],,drop=FALSE]
+	print(filedata)
+	
+	tdata = read.table(paste(filestem,tag,".txt",sep=""),sep="\t",header=TRUE)
+	x11(width=4,height=4)
+	tbdata = SizeDistPlot(as.matrix(tdata),sizem2=as.numeric(filedata$landscape_m2),main=paste(filestem,tag))
+
+}#end PlotFile
+
+######################################
+main_cohorts = function(runV=runVdefault,tag=1,newplot=FALSE,plotting=TRUE){
 #runs the cohorts model
 #runV: contains all of the inputs for the simulation, including:
 	#filestem: the name to call the output files
@@ -32,7 +52,7 @@ main_cohorts = function(runV=c(filestem="default",PA=1000,deltaT=1,Fnot=0.02,dno
 #mu: the stand clearing disturbance rate
 #cutT: the time between recording snapshots of the forest - these used to build a landscape of independent forests
 #landscape_m2: the desired size of the final assembled landscape (landscape_m2 = PA*[total run time]/cutT)
-#tag: an identifier for the specific run
+#tag: an identifier for replicates; runs with the same tag should have all of the same parameters
 #newplot: logical, whether to create a new plotting window
 #plotting: logical, whether to plot the size distribution during the simulation, when TRUE slows the run speed considerably
 ######################################
