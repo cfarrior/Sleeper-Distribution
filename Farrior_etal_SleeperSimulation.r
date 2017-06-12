@@ -35,7 +35,7 @@ PlotFile = function(filestem="test",tag=1,saveaspdf=TRUE){
 	tbdata = SizeDistPlot(as.matrix(tdata),sizem2=as.numeric(filedata$landscape_m2),main=paste(filestem,tag))
 	
 	if(saveaspdf){
-		pdf(paste(filestem,".pdf",sep=""),width=4,height=4)
+		pdf(paste(filestem,tag,".pdf",sep=""),width=4,height=4)
 		tbdata = SizeDistPlot(as.matrix(tdata),sizem2=as.numeric(filedata$landscape_m2),main=paste(filestem,tag))
 		dev.off()
 	}
