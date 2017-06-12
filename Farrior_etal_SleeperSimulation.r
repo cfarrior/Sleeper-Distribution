@@ -17,7 +17,7 @@ runVdefault = c(filestem="PaperParameters",PA=1000,deltaT=1,Fnot=0.02,dnot=.02,G
 phi = 0.03615016; theta = 1.2819275
 
 ######################################
-PlotFile = function(filestem="test",tag=1){
+PlotFile = function(filestem="test",tag=1,saveaspdf=TRUE){
 #funtion to plot the size distribution for the filestem,tag file. 
 #reads the parameter values used from the log file and uses that information for plotting the data in the output file 
 ######################################
@@ -33,6 +33,11 @@ PlotFile = function(filestem="test",tag=1){
 	tdata = read.table(paste(filestem,tag,".txt",sep=""),sep="\t",header=TRUE)
 	x11(width=4,height=4)
 	tbdata = SizeDistPlot(as.matrix(tdata),sizem2=as.numeric(filedata$landscape_m2),main=paste(filestem,tag))
+	
+	if(saveaspdf){
+		pdf(paste(filestem,".pdf",sep=""),width=4,height=4)
+		tbdata = SizeDistPlot(as.matrix(tdata),sizem2=as.numeric(filedata$landscape_m2),main=paste(filestem,tag))
+	}
 
 }#end PlotFile
 
