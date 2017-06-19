@@ -24,12 +24,13 @@ PlotFile = function(filestem="test",tag=1,saveaspdf=TRUE){
 
 	filelog = read.table("main_cohorts_LOG.txt",sep="\t",header=FALSE)
 	filelog = as.data.frame(filelog)
-	names(filelog) = c("date",names(runV))
+	names(filelog) = c("date",names(runVdefault))
 	
 	filedata = filelog[filelog$filestem==filestem,,drop=FALSE]
 	filedata = filedata[dim(filedata)[1],,drop=FALSE]
 	print(filedata)
 	
+	tag=1 #tag is always 1, only tag=1 is ever saved because tag>1 means that the same parameters are being run additional times to look at the stochastics. 
 	tdata = read.table(paste(filestem,tag,".txt",sep=""),sep="\t",header=TRUE)
 	x11(width=4,height=4)
 	tbdata = SizeDistPlot(as.matrix(tdata),sizem2=as.numeric(filedata$landscape_m2),main=paste(filestem,tag))
